@@ -15,6 +15,8 @@ $(document).ready(function() {
       if (this.readyState === 4 && this.status === 200) {
         const response = JSON.parse(this.responseText);
         getElements(response);
+      } else if (this.readyState === 4 && this.status === 404) {
+        $('.showErrors').text(`Please just input City not City, State!`)
       }
     };
 
@@ -30,6 +32,8 @@ $(document).ready(function() {
       $('.showPressure').text(`The current pressure is ${response.main.pressure}hPa.`);
       $('.showMax').text(`The max temperature for today in Fahrenheit is ${toFahrenheit(response.main.temp_max)} degrees.`);
       $('.showMin').text(`The minimum temperature for today in Fahrenheit is ${toFahrenheit(response.main.temp_min)} degrees.`);
+      $('.showDesc').text(`The forecast today includes ${response.weather[0].main} skies.`);
+
     }    
     
     function toFahrenheit(temp) {
