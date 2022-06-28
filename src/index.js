@@ -2,39 +2,37 @@ import $ from 'jquery';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './css/styles.css';
+import WeatherService from './js/weather-service.js'
+
+function clearFields() {
+  $('#location').val("");
+  $('.showHumidity').text("");
+  $('.showTemp').text("");
+  $('.showFeels').text("");
+  $('.showPressure').text("");
+  $('.showMax').text("");
+  $('.showMin').text("");
+  $('.showDesc').text("");
+}
+
 
 $(document).ready(function() {
   $('#weatherLocation').click(function() {
-    const city = $('#location').val();
-    $('#location').val("");
-
-    let request = new XMLHttpRequest();
-    const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY}`;
-
-    request.onreadystatechange = function() {
-      if (this.readyState === 4 && this.status === 200) {
-        const response = JSON.parse(this.responseText);
-        getElements(response);
-      } else if (this.readyState === 4 && this.status === 404) {
-        $('.showErrors').text(`Please just input City not City, State!`)
-      }
-    };
-
-    request.open("GET", url, true);
-    request.send();
-
-    
-
-    function getElements(response) {
-      $('.showHumidity').text(`The humidity in ${city} is ${response.main.humidity}%`);
-      $('.showTemp').text(`The temperature in Fahrenheit is ${toFahrenheit(response.main.temp)} degrees.`);
-      $('.showFeels').text(`The temperature in Fahrenheit feels like ${toFahrenheit(response.main.feels_like)} degrees.`);
-      $('.showPressure').text(`The current pressure is ${response.main.pressure}hPa.`);
-      $('.showMax').text(`The max temperature for today in Fahrenheit is ${toFahrenheit(response.main.temp_max)} degrees.`);
-      $('.showMin').text(`The minimum temperature for today in Fahrenheit is ${toFahrenheit(response.main.temp_min)} degrees.`);
-      $('.showDesc').text(`The forecast today includes ${response.weather[0].main} skies.`);
-
-    }    
+    let location = $('#location').val();
+    clearFields();
+    let promise = WeatherService.getWeather(location);
+    promise.then(function(response) {
+      const body = JSON.parse(response);
+      $('.showHumidity').text(`The humidity in ${location} is ${body.main.humidity}%`);
+      $('.showTemp').text(`The temperature in Fahrenheit is ${toFahrenheit(body.main.temp)} degrees.`);
+      $('.showFeels').text(`The temperature in Fahrenheit feels like ${toFahrenheit(body.main.feels_like)} degrees.`);
+      $('.showPressure').text(`The current pressure is ${body.main.pressure}hPa.`);
+      $('.showMax').text(`The max temperature for today in Fahrenheit is ${toFahrenheit(body.main.temp_max)} degrees.`);
+      $('.showMin').text(`The minimum temperature for today in Fahrenheit is ${toFahrenheit(body.main.temp_min)} degrees.`);
+      $('.showDesc').text(`The forecast today includes ${body.weather[0].main} skies.`);
+    }, function(error) {
+      $('.showError').text(`There was an error processing your request; ${error}`)
+    });    
     
     function toFahrenheit(temp) {
       let newTemp = parseFloat(((temp) - 273.15) * 9/5 + 32).toFixed(2);
